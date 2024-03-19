@@ -1,0 +1,282 @@
+SELECT
+distinct
+TO_CHAR(NOW(),'MM/DD/YYYY')HOJE,
+	P .nome,
+	matricula,
+	t.valor,
+	CASE M .id_turno
+WHEN 4 THEN
+	'NOCTURNAL COURSE'
+WHEN 9 THEN
+	'MORNING COURSE'
+END TURNO,
+ CASE M.id_campus
+WHEN 74116 THEN
+	'SÃO BERNARDO'
+WHEN 74079 THEN'SANTO ANDRÉ'
+END CIDADE,
+CASE C .id_grau_academico
+WHEN 1 THEN
+	'BACHELOR DEGREE – In person '
+WHEN 2 THEN 'GRADUATION DEGREE - In person '
+END TIPO,
+cc.codigo,
+cc.id_disciplina,
+case cd.valor 
+when null then  cdd.valor
+else cd.valor
+end disciplina
+FROM
+	discente d
+INNER JOIN curso C ON C .id_curso = d.id_curso
+INNER JOIN internacionalizacao.traducao_elemento T ON T .id_elemento = C .id_curso
+AND idioma = 'en'
+INNER JOIN comum.pessoa P ON P .id_pessoa = d.id_pessoa
+LEFT JOIN graduacao.discente_graduacao dg ON dg.id_discente_graduacao = d.id_discente
+LEFT JOIN graduacao.matriz_curricular M ON M .id_matriz_curricular = dg.id_matriz_curricular
+inner join ensino.matricula_componente mc
+on mc.id_discente=d.id_discente
+left JOIN internacionalizacao.traducao_elemento  cd
+on cd.id_elemento=mc.id_componente_curricular
+AND cd.id_item_traducao=3
+and cd.idioma='en'
+inner join ensino.componente_curricular cc
+on cc.id_disciplina=mc.id_componente_curricular
+left JOIN internacionalizacao.traducao_elemento  cdd
+on cdd.id_elemento=mc.id_componente_curricular
+AND cd.id_item_traducao=3
+and cd.idioma='pt'
+ WHERE 
+	matricula = 21202210047
+and ano=2023 and periodo=3
+and mc.id_situacao_matricula=2
+order by codigo
+
+WITH t_temp (
+	id_discente,
+	nome,
+	cpf_puro,
+	ra,
+	curso,
+	disciplina,
+	carga_horaria,
+	id_turma,
+	quadrimestre,
+	descricao_horario,
+	nivel,
+	dia,
+	mes,
+	ano,
+	dia_ingresso,
+	mes_ingresso,
+	ano_ingresso,
+	periodo,
+	teoria_pratica
+) AS (
+	SELECT DISTINCT
+		d.id_discente,
+		COALESCE (P .nome, 'null') nome,
+		CASE
+	WHEN (
+		LENGTH (CAST(P .cpf_cnpj AS TEXT)) = 10
+	) THEN
+		'0' || P .cpf_cnpj
+	WHEN (
+		LENGTH (CAST(P .cpf_cnpj AS TEXT)) = 9
+	) THEN
+		'00' || P .cpf_cnpj
+	WHEN (
+		LENGTH (CAST(P .cpf_cnpj AS TEXT)) = 8
+	) THEN
+		'000' || P .cpf_cnpj
+	ELSE
+		CAST (P .cpf_cnpj AS TEXT)
+	END,
+	COALESCE (d.matricula, '0') ra,
+	COALESCE (cc.nome, 'null') curso,
+	cd.codigo || ' - ' || cd.nome disciplina,
+	CASE
+WHEN ec.id_forma_participacao = 2
+OR cd.ch_total = NULL THEN
+	'48 horas semanais'
+ELSE
+	CAST (cd.ch_total AS VARCHAR) || ' horas no total'
+END carga_horaria,
+ M .id_turma,
+ CASE M .periodo
+WHEN '1' THEN
+	'1º quadrimestre'
+WHEN '2' THEN
+	'2º quadrimestre'
+WHEN '3' THEN
+	'3º quadrimestre'
+END quadrimestre,
+ CASE dia
+WHEN '2' THEN
+	'Segunda Feira'
+WHEN '3' THEN
+	'Terça Feira'
+WHEN '4' THEN
+	'Quarta Feira'
+WHEN '5' THEN
+	'Quinta Feira'
+WHEN '6' THEN
+	'Sexta Feira'
+WHEN '7' THEN
+	'Sabado'
+END || ' - ' || hora_inicio || ' - ' || hora_fim,
+ d.nivel,
+ To_char(Now(), 'dd') dia,
+ CASE
+WHEN EXTRACT (MONTH FROM Now()) = 12 THEN
+	'dezembro'
+WHEN EXTRACT (MONTH FROM Now()) = 1 THEN
+	'janeiro'
+WHEN EXTRACT (MONTH FROM Now()) = 2 THEN
+	'fevereiro'
+WHEN EXTRACT (MONTH FROM Now()) = 3 THEN
+	'março'
+WHEN EXTRACT (MONTH FROM Now()) = 4 THEN
+	'abril'
+WHEN EXTRACT (MONTH FROM Now()) = 5 THEN
+	'maio'
+WHEN EXTRACT (MONTH FROM Now()) = 6 THEN
+	'junho'
+WHEN EXTRACT (MONTH FROM Now()) = 7 THEN
+	'julho'
+WHEN EXTRACT (MONTH FROM Now()) = 8 THEN
+	'agosto'
+WHEN EXTRACT (MONTH FROM Now()) = 9 THEN
+	'setembro'
+WHEN EXTRACT (MONTH FROM Now()) = 10 THEN
+	'outubro'
+WHEN EXTRACT (MONTH FROM Now()) = 11 THEN
+	'novembro'
+END mes,
+ To_char(Now(), 'yyyy') ano,
+ To_char(d.data_ingresso, 'dd') dia_ingresso,
+ CASE
+WHEN EXTRACT (MONTH FROM d.data_ingresso) = 12 THEN
+	'dezembro'
+WHEN EXTRACT (MONTH FROM d.data_ingresso) = 1 THEN
+	'janeiro'
+WHEN EXTRACT (MONTH FROM d.data_ingresso) = 2 THEN
+	'fevereiro'
+WHEN EXTRACT (MONTH FROM d.data_ingresso) = 3 THEN
+	'março'
+WHEN EXTRACT (MONTH FROM d.data_ingresso) = 4 THEN
+	'abril'
+WHEN EXTRACT (MONTH FROM d.data_ingresso) = 5 THEN
+	'maio'
+WHEN EXTRACT (MONTH FROM d.data_ingresso) = 6 THEN
+	'junho'
+WHEN EXTRACT (MONTH FROM d.data_ingresso) = 7 THEN
+	'julho'
+WHEN EXTRACT (MONTH FROM d.data_ingresso) = 8 THEN
+	'agosto'
+WHEN EXTRACT (MONTH FROM d.data_ingresso) = 9 THEN
+	'setembro'
+WHEN EXTRACT (MONTH FROM d.data_ingresso) = 10 THEN
+	'outubro'
+WHEN EXTRACT (MONTH FROM d.data_ingresso) = 11 THEN
+	'novembro'
+END mes_ingresso,
+ To_char(d.data_ingresso, 'yyyy') ano_ingresso,
+ CASE
+WHEN descricao_horario ILIKE '%M%' THEN
+	'Manhã'
+WHEN descricao_horario ILIKE '%T%' THEN
+	'Tarde'
+WHEN descricao_horario ILIKE '%N%' THEN
+	'Noite'
+ELSE
+	'Integral (dedicação exclusiva)'
+END periodo,
+ CASE
+WHEN cd.ch_teorico > 0
+AND cd.ch_pratico = 0 THEN
+	'Teórica'
+WHEN cd.ch_teorico = 0
+AND cd.ch_pratico > 0 THEN
+	'Prática'
+WHEN cd.ch_teorico > 0
+AND cd.ch_pratico > 0 THEN
+	'Teórica e Prática'
+ELSE
+	'Prática'
+END teoria_pratica,
+ SUBSTRING (
+	CAST (d.prazo_conclusao AS VARCHAR),
+	1,
+	4
+) ano_conclusao,
+ CASE SUBSTRING (
+	CAST (d.prazo_conclusao AS VARCHAR),
+	1,
+	1
+)
+WHEN '1' THEN
+	'primeiro'
+WHEN '2' THEN
+	'segundo'
+WHEN '3' THEN
+	'terceiro'
+END "quad",
+ tl.descricao || ' ' || e.logradouro logradouro,
+ e.numero,
+ e.bairro,
+ mn.nome municipio,
+ uf.descricao estado
+FROM
+	comum.pessoa P
+INNER JOIN PUBLIC .discente d ON d.id_pessoa = P .id_pessoa
+INNER JOIN PUBLIC .curso cc ON cc.id_curso = d.id_curso
+INNER JOIN graduacao.curriculo C ON C .id_curriculo = d.id_curriculo
+INNER JOIN ensino.matricula_componente M ON M .id_discente = d.id_discente
+INNER JOIN ensino.componente_curricular_detalhes cd ON cd.id_componente = M .id_componente_curricular
+AND cd.id_componente_detalhes = M .id_componente_detalhes
+INNER JOIN ensino.componente_curricular ec ON ec.id_disciplina = cd.id_componente
+INNER JOIN ensino.turma T ON T .id_turma = M .id_turma
+INNER JOIN graduacao.discente_graduacao ds ON ds.id_discente_graduacao = d.id_discente
+INNER JOIN comum.endereco e ON e.id_endereco = P .id_endereco_contato
+INNER JOIN comum.tipo_logradouro tl ON tl.id_tipo_logradouro = e.id_tipo_logradouro
+INNER JOIN comum.municipio mn ON mn.id_municipio = e.id_municipio
+INNER JOIN comum.unidade_federativa uf ON uf.id_unidade_federativa = mn.id_unidade_federativa
+INNER JOIN ensino.horario_turma ht ON ht.id_turma = M .id_turma
+AND d.matricula =11201722202
+AND M .ano =2023
+AND M .periodo =3
+) SELECT
+	id_discente,
+	nome,
+	regexp_replace(
+		LPAD(CAST(cpf_puro AS TEXT), 11),
+		'([0-9]{3})([0-9]{3})([0-9]{3})',
+		'..-'
+	) AS cpf,
+	cpf_puro,
+	ra,
+	curso,
+	disciplina,
+	carga_horaria,
+	id_turma,
+	quadrimestre,
+	descricao_horario,
+	nivel,
+	dia,
+	mes,
+	ano,
+	dia_ingresso,
+	mes_ingresso,
+	ano_ingresso,
+	periodo,
+	teoria_pratica,
+	ano_conclusao,
+	quad,
+	logradouro,
+	numero,
+	bairro,
+	municipio,
+	estado
+FROM
+	t_temp;
