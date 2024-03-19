@@ -82,6 +82,13 @@ WITH t_temp (
 	ano_ingresso,
 	periodo,
 	teoria_pratica
+
+	dia_ingresso,
+	mes_ingresso,
+	ano_ingresso,
+	periodo,
+	teoria_pratica
+	
 ) AS (
 	SELECT DISTINCT
 		d.id_discente,
